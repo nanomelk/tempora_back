@@ -9,13 +9,7 @@ dotenv.config();
 const app = express();
 
 // Configurar CORS para permitir solo solicitudes desde https://temporarelojes.netlify.app
-const corsOptions = {
-   origin: ['https://temporarelojes.netlify.app', 'http://localhost:3000'], // Permitir múltiples orígenes
-   methods: ['GET', 'POST'], // Métodos permitidos (puedes añadir más si es necesario)
-   allowedHeaders: ['Content-Type', 'Authorization'], // Encabezados permitidos
-};
-
-app.use(cors(corsOptions)); // Usar el middleware cors con las opciones definidas
+app.use(cors()); // Permitir todas las solicitudes CORS
 
 
 // Middleware para parsear JSON
