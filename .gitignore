@@ -1,0 +1,12 @@
+# Node.js-specific
+/node_modules/
+/dist/
+npm-debug.log
+yarn-error.log
+
+# Environment variables
+.env
+
+# IDE settings
+.idea/
+.vscode/
