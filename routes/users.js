@@ -19,4 +19,28 @@ router.post('/register', async (req, res) => {
    }
 });
 
+// Ruta para iniciar sesión
+router.post('/login', async (req, res) => {
+   const { email, password } = req.body;
+
+   try {
+      // Buscar el usuario por el correo electrónico
+      const user = await User.findOne({ email });
+      if (!user) {
+         return res.status(404).json({ message: 'Usuario no encontrado' });
+      }
+
+      // Verificar la contraseña
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+         return res.status(400).json({ message: 'Contraseña incorrecta' });
+      }
+
+      // Aquí puedes generar un token JWT si lo deseas, pero eso es opcional por ahora
+      res.status(200).json({ message: 'Inicio de sesión exitoso', user });
+   } catch (err) {
+      res.status(500).json({ message: err.message });
+   }
+});
+
 module.exports = router;
