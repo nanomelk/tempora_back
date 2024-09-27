@@ -12,18 +12,25 @@ router.post('/register', async (req, res) => {
     // Encriptar la contraseña antes de guardarla
     const hashedPassword = await bcrypt.hash(password, 10);
     
-    const newUser = new User({ name, email, password: hashedPassword });
+    // Crear un nuevo usuario con habilidad predeterminada 'user'
+    const newUser = new User({ 
+      name, 
+      email, 
+      password: hashedPassword, 
+      habilities: 'user' // Inicializar con 'user'
+    });
+
     const savedUser = await newUser.save();
 
     // Generar token JWT al registrarse
-    const token = jwt.sign({ id: savedUser._id }, process.env.JWT_SECRET, {
-      expiresIn: '1h', // El token expira en 1 hora
-    });
+    //const token = jwt.sign({ id: savedUser._id }, process.env.JWT_SECRET, {
+    //  expiresIn: '1h', // El token expira en 1 hora
+    //});
 
     res.status(201).json({
       message: 'Usuario registrado con éxito',
-      user: savedUser,
-      token, // Devolvemos el token
+      user: savedUser//,
+      //token, // Devolvemos el token
     });
   } catch (err) {
     res.status(400).json({ message: 'Error al registrar el usuario', error: err.message });
@@ -64,7 +71,6 @@ router.post('/login', async (req, res) => {
        res.status(500).json({ message: err.message });
    }
 });
-
 
 
 module.exports = router;
