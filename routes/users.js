@@ -65,11 +65,19 @@ router.post('/login', async (req, res) => {
            maxAge: 3600000 // 1 hora
        });
 
-       // Enviar respuesta exitosa incluyendo el token
-       res.status(200).json({ message: 'Inicio de sesión exitoso', user: { id: user._id, name: user.name }, token }); // Devuelve el token aquí
-   } catch (err) {
-       res.status(500).json({ message: err.message });
-   }
+       // Enviar respuesta exitosa incluyendo el token y habilidades
+       res.status(200).json({
+        message: 'Inicio de sesión exitoso',
+        user: {
+            id: user._id,
+            name: user.name,
+            habilities: user.habilities // Incluir habilidades en la respuesta
+        },
+        token // Devuelve el token aquí
+    });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
 });
 
 
