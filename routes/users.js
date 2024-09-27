@@ -1,25 +1,37 @@
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User'); // Importa el modelo User
+const User = require('../models/User');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+require('dotenv').config(); // Para cargar variables de entorno
 
 // Ruta para registrar un usuario
 router.post('/register', async (req, res) => {
-   const { name, email, password } = req.body;
-   // Encriptar la contraseña antes de guardarla
-   const hashedPassword = await bcrypt.hash(password, 10);
+  const { name, email, password } = req.body;
+  try {
+    // Encriptar la contraseña antes de guardarla
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    const newUser = new User({ name, email, password: hashedPassword });
+    const savedUser = await newUser.save();
 
-   const newUser = new User({ name, email, password: hashedPassword });
+    // Generar token JWT al registrarse
+    const token = jwt.sign({ id: savedUser._id }, process.env.JWT_SECRET, {
+      expiresIn: '1h', // El token expira en 1 hora
+    });
 
-   try {
-      const savedUser = await newUser.save();
-      res.status(201).json(savedUser);
-   } catch (err) {
-      res.status(400).json({ message: err.message });
-   }
+    res.status(201).json({
+      message: 'Usuario registrado con éxito',
+      user: savedUser,
+      token, // Devolvemos el token
+    });
+  } catch (err) {
+    res.status(400).json({ message: 'Error al registrar el usuario', error: err.message });
+  }
 });
 
 // Ruta para iniciar sesión
+
 router.post('/login', async (req, res) => {
    const { email, password } = req.body;
 
@@ -36,11 +48,23 @@ router.post('/login', async (req, res) => {
          return res.status(400).json({ message: 'Contraseña incorrecta' });
       }
 
-      // Aquí puedes generar un token JWT si lo deseas, pero eso es opcional por ahora
-      res.status(200).json({ message: 'Inicio de sesión exitoso', user });
+      // Generar el token JWT
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+      // Configurar la cookie con opciones seguras
+      res.cookie('token', token, {
+         httpOnly: true, // La cookie no es accesible desde JS
+         secure: process.env.NODE_ENV === 'production', // Solo se envía a través de HTTPS en producción
+         sameSite: 'Strict', // Solo se envía en solicitudes del mismo sitio
+         maxAge: 3600000 // 1 hora
+      });
+
+      // Enviar respuesta exitosa
+      res.status(200).json({ message: 'Inicio de sesión exitoso', user: { id: user._id, name: user.name } });
    } catch (err) {
       res.status(500).json({ message: err.message });
    }
 });
+
 
 module.exports = router;
