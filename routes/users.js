@@ -31,40 +31,40 @@ router.post('/register', async (req, res) => {
 });
 
 // Ruta para iniciar sesión
-
 router.post('/login', async (req, res) => {
    const { email, password } = req.body;
 
    try {
-      // Buscar el usuario por el correo electrónico
-      const user = await User.findOne({ email });
-      if (!user) {
-         return res.status(404).json({ message: 'Usuario no encontrado' });
-      }
+       // Buscar el usuario por el correo electrónico
+       const user = await User.findOne({ email });
+       if (!user) {
+           return res.status(404).json({ message: 'Usuario no encontrado' });
+       }
 
-      // Verificar la contraseña
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-         return res.status(400).json({ message: 'Contraseña incorrecta' });
-      }
+       // Verificar la contraseña
+       const isMatch = await bcrypt.compare(password, user.password);
+       if (!isMatch) {
+           return res.status(400).json({ message: 'Contraseña incorrecta' });
+       }
 
-      // Generar el token JWT
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+       // Generar el token JWT
+       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-      // Configurar la cookie con opciones seguras
-      res.cookie('token', token, {
-         httpOnly: true, // La cookie no es accesible desde JS
-         secure: process.env.NODE_ENV === 'production', // Solo se envía a través de HTTPS en producción
-         sameSite: 'Strict', // Solo se envía en solicitudes del mismo sitio
-         maxAge: 3600000 // 1 hora
-      });
+       // Configurar la cookie con opciones seguras
+       res.cookie('token', token, {
+           httpOnly: true, // La cookie no es accesible desde JS
+           secure: process.env.NODE_ENV === 'production', // Solo se envía a través de HTTPS en producción
+           sameSite: 'Strict', // Solo se envía en solicitudes del mismo sitio
+           maxAge: 3600000 // 1 hora
+       });
 
-      // Enviar respuesta exitosa
-      res.status(200).json({ message: 'Inicio de sesión exitoso', user: { id: user._id, name: user.name } });
+       // Enviar respuesta exitosa incluyendo el token
+       res.status(200).json({ message: 'Inicio de sesión exitoso', user: { id: user._id, name: user.name }, token }); // Devuelve el token aquí
    } catch (err) {
-      res.status(500).json({ message: err.message });
+       res.status(500).json({ message: err.message });
    }
 });
+
 
 
 module.exports = router;
