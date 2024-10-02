@@ -5,6 +5,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config(); // Para cargar variables de entorno
 
+// Importar los middlewares
+const verifyToken = require('../middleware/verifyToken');
+const verifyHabilities = require('../middleware/verifyHabilities');
+
 // Ruta para registrar un usuario
 router.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
@@ -78,6 +82,16 @@ router.post('/login', async (req, res) => {
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
+});
+
+// Ejemplo de una ruta protegida para admins
+router.get('/admin-dashboard', verifyToken, verifyHabilities(['admin']), (req, res) => {
+  res.json({ message: 'Bienvenido al dashboard de admin' });
+});
+
+// Otra ruta que solo requiere que el usuario esté autenticado, sin habilidades específicas
+router.get('/profile', verifyToken, (req, res) => {
+  res.json({ message: `Perfil de usuario: ${req.user.id}` });
 });
 
 
